@@ -10,3 +10,4 @@
 
 ### Password Cracking
 - John The Ripper
+- Hashcat
