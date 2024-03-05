@@ -2,12 +2,11 @@
 
 ## Tools
 ### Web
-    - FFUF
-    - SQLMap
+- FFUF
+- SQLMap
 
 ### Discover
-    - NMAP
+- NMAP
 
 ### Password Cracking
-    - John The Ripper
-    - Hashcat
+- John The Ripper
