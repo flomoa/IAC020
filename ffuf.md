@@ -1,4 +1,4 @@
-# Cheat Sheet
+# FFUF Cheat Sheet
 
 ## FFUF
 
