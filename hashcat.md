@@ -1,7 +1,3 @@
-# Summary
-```table-of-contents
-```
-
 # Hashcat Attack mode
 | Command | Action                 |
 | ------- | ---------------------- |
