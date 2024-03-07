@@ -1,45 +1,19 @@
 #!/bin/bash
 
 # Fonction permettant d'effectuer un balayage du réseau à l'aide de tcpdump
-capture_ip_addresses() {
+capture_ip_addresses_and_scan() {
     local duration=${1:-10} # Durée d'écoute de tcpdump, par défaut 10 secondes
     local interface=${2:-$(ip route | grep '^default' | awk '{print $5}' | head -n 1)} # Interface par défaut
-    local tcpdump_file="tcpdump_output.txt" # Fichier de stockage de la sortie tcpdump
+    local tcpdump_file="tcpdump_output.txt" # File to store tcpdump output
 
     # Démarrer tcpdump sur l'interface par défaut pour une certaine durée, capturant seulement les adresses IP qui commencent par 192.168
     printf "Starting tcpdump for %d seconds on interface %s, filtering for IP addresses starting with 192.168...\n" "$duration" "$interface"
     sudo timeout "$duration" tcpdump -i "$interface" -n 'src net 192.168' -w - 2>/dev/null | tcpdump -r - -n 2>/dev/null | awk '{print $3}' | sed 's/:[0-9]*$//' | grep -Eo '192\.168\.[0-9]{1,3}\.[0-9]{1,3}' | sort -u > "$tcpdump_file"
-}
-
-# Fonction permettant à l'utilisateur de sélectionner une adresse IP pour le scan nmap
-select_and_scan() {
-    local tcpdump_file="tcpdump_output.txt" # Fichier où sont stockées les adresses IP capturées
-    local ip_list=($(cat "$tcpdump_file")) # Convertir le contenu du fichier en tableau
-    local choice
     
-    while true; do
-        printf "Select an IP address to scan or choose '0' to exit:\n"
-        local index=1
-        for ip in "${ip_list[@]}"; do
-            printf "%d) %s\n" "$index" "$ip"
-            ((index++))
-        done
-        printf "0) Exit\n"
-
-        read -p "Enter your choice: " choice
-        # Check if user wants to exit
-        if [[ "$choice" -eq 0 ]]; then
-            printf "Exiting.\n"
-            break
-        fi
-
-        # Validate user input
-        if ! [[ "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#ip_list[@]}" ]; then
-            printf "Invalid selection. Please try again.\n" >&2
-        else
-            local selected_ip="${ip_list[$choice-1]}"
-            perform_nmap_scan "$selected_ip"
-        fi
+    # Read the list of captured IP addresses and perform nmap scan on each
+    local ip_list=($(cat "$tcpdump_file")) # Convert file content to array
+    for ip in "${ip_list[@]}"; do
+        perform_nmap_scan "$ip"
     done
 }
 
@@ -60,11 +34,8 @@ main() {
     local scan_duration=30 # Durée du tcpdump
     local network_interface="eth0" # Interface par défaut
 
-    # Capturing IP addresses
-    capture_ip_addresses "$scan_duration" "$network_interface"
-
-    # Selection de l'adresse IP
-    select_and_scan
+    # Capturing IP addresses and performing scans
+    capture_ip_addresses_and_scan "$scan_duration" "$network_interface"
 }
 
 # Execution de la fonction principale
