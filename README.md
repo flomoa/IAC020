@@ -7,6 +7,7 @@
 
 ### Discover
 - NMAP
+- MassScan
 
 ### Password Cracking
 - John The Ripper
